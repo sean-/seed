@@ -38,9 +38,9 @@ func cryptoSeed() error {
 // was securely seeded.  If Init() has already initialized the random number or
 // it had failed to securely initialize the random number generation, Init()
 // will return false.  See MustInit().
-func Init() (seededSecurely, prngSeeded bool, err error) {
+func Init() (seededSecurely bool, err error) {
 	if atomic.LoadInt32(&seeded) == 1 {
-		return false, true, nil
+		return false, nil
 	}
 
 	// Slow-path
@@ -48,10 +48,10 @@ func Init() (seededSecurely, prngSeeded bool, err error) {
 	defer m.Unlock()
 
 	if err := cryptoSeed(); err != nil {
-		return false, true, err
+		return false, err
 	}
 
-	return true, true, nil
+	return true, nil
 }
 
 // MustInit provides guaranteed secure seeding.  If `/dev/urandom` is not
