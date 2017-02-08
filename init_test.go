@@ -7,8 +7,8 @@ import (
 )
 
 func TestInit(t *testing.T) {
-	b, err := seed.Init()
-	if !b {
+	_, seeded, err := seed.Init()
+	if !seeded {
 		t.Fatalf("Seeding failed: %v", err)
 	}
 }
