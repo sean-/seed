@@ -24,3 +24,23 @@ func TestMustInit(t *testing.T) {
 		t.Fatalf("MustInit() failed to securely seed")
 	}
 }
+
+func TestInitConcurrent(t *testing.T) {
+	// Should not race or panic when many goroutines call Init.
+	const n = 32
+	errc := make(chan error, n)
+	for i := 0; i < n; i++ {
+		go func() {
+			_, err := seed.Init()
+			errc <- err
+		}()
+	}
+	for i := 0; i < n; i++ {
+		if err := <-errc; err != nil {
+			t.Fatalf("Init: %v", err)
+		}
+	}
+	if !seed.Seeded() {
+		t.Fatal("expected Seeded after concurrent Init")
+	}
+}

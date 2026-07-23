@@ -47,6 +47,11 @@ func Init() (seededSecurely bool, err error) {
 	m.Lock()
 	defer m.Unlock()
 
+	// Re-check after lock: another goroutine may have seeded already.
+	if atomic.LoadInt32(&seeded) == 1 {
+		return false, nil
+	}
+
 	if err := cryptoSeed(); err != nil {
 		return false, err
 	}
@@ -66,6 +71,11 @@ func MustInit() {
 	// Slow-path
 	m.Lock()
 	defer m.Unlock()
+
+	// Re-check after lock: another goroutine may have securely seeded already.
+	if atomic.LoadInt32(&secure) == 1 {
+		return
+	}
 
 	if err := cryptoSeed(); err != nil {
 		panic(fmt.Sprintf("Unable to seed the random number generator: %v", err))
